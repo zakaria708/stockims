@@ -326,7 +326,7 @@ Additional technical documentation is available in the repository:
 
 ## 12. Author
 
-**GitHub:** [zakaria708](https://github.com/zakaria708)
+**GitHub:** [zakaria708](https://github.com/zakaria708) [Hiba1324](https://github.com/Hiba1324) 
 
 **Institution:** ESITH — École Supérieure des Industries du Textile et de l'Habillement
 
