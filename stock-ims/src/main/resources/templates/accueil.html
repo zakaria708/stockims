@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>StockIMS - Tableau de bord</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="app-shell">
+  <aside th:replace="~{fragments/navigation :: sidebar('dashboard')}"></aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="title-row">
+        <button class="btn btn-light mobile-menu" type="button" data-menu-toggle>☰</button>
+        <div>
+          <h1 th:text="${message}">Bienvenue dans StockIMS</h1>
+          <p class="subtitle">Vue d’ensemble de votre inventaire et des derniers mouvements.</p>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <form class="quick-import-form" th:action="@{/articles/import}" method="post" enctype="multipart/form-data">
+          <input id="dashboardImport" class="visually-hidden-file" name="fichier" type="file" accept=".csv,.xlsx,.xls,.txt,text/csv,text/plain,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" required data-auto-import>
+          <label class="btn btn-outline" for="dashboardImport">⇧ Importer un fichier</label>
+        </form>
+        <a class="btn btn-primary" th:href="@{/articles/nouveau}">＋ Ajouter un article</a>
+      </div>
+    </header>
+
+    <section class="grid stats-grid stats-grid-4">
+      <article class="stat-card">
+        <div class="stat-top"><span class="stat-label">Articles enregistrés</span><span class="stat-icon">▦</span></div>
+        <div class="stat-value" th:text="${nombreArticles}">0</div>
+        <div class="stat-note">Références dans le catalogue</div>
+      </article>
+      <article class="stat-card">
+        <div class="stat-top"><span class="stat-label">Unités en stock</span><span class="stat-icon">◫</span></div>
+        <div class="stat-value" th:text="${stockTotal}">0</div>
+        <div class="stat-note">Somme de tous les stocks</div>
+      </article>
+      <article class="stat-card">
+        <div class="stat-top"><span class="stat-label">Stock faible</span><span class="stat-icon">!</span></div>
+        <div class="stat-value" th:text="${articlesFaibles}">0</div>
+        <div class="stat-note">Stock positif inférieur au seuil</div>
+      </article>
+      <article class="stat-card">
+        <div class="stat-top"><span class="stat-label">Articles épuisés</span><span class="stat-icon">×</span></div>
+        <div class="stat-value" th:text="${articlesEpuises}">0</div>
+        <div class="stat-note">Stock nul ou égal au seuil</div>
+      </article>
+    </section>
+
+    <section class="dashboard-grid">
+      <article class="card">
+        <div class="card-header">
+          <div><h2 class="card-title">État du stock</h2><p class="subtitle">Répartition des références par niveau de stock.</p></div>
+        </div>
+        <div class="chart-list">
+          <div class="chart-row">
+            <div class="chart-label"><span>Disponible</span><strong th:text="${articlesDisponibles}">0</strong></div>
+            <div class="chart-track"><div class="chart-bar chart-ok" th:style="'width:' + ${pctDisponibles} + '%'" ></div></div>
+          </div>
+          <div class="chart-row">
+            <div class="chart-label"><span>Faible</span><strong th:text="${articlesFaibles}">0</strong></div>
+            <div class="chart-track"><div class="chart-bar chart-low" th:style="'width:' + ${pctFaibles} + '%'" ></div></div>
+          </div>
+          <div class="chart-row">
+            <div class="chart-label"><span>Épuisé</span><strong th:text="${articlesEpuises}">0</strong></div>
+            <div class="chart-track"><div class="chart-bar chart-empty" th:style="'width:' + ${pctEpuises} + '%'" ></div></div>
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-header">
+          <div><h2 class="card-title">Actions rapides</h2><p class="subtitle">Accès aux fonctions principales.</p></div>
+        </div>
+        <div class="quick-action-stack">
+          <a class="action-card" th:href="@{/articles}"><strong>Consulter les articles →</strong><span>Recherche, filtres, stock et export CSV.</span></a>
+          <a class="action-card" th:href="@{/mouvements}"><strong>Voir les mouvements →</strong><span>Historique des entrées et sorties.</span></a>
+          <a class="action-card" th:href="@{/articles/nouveau}"><strong>Créer une référence →</strong><span>Ajouter un article avec son stock initial.</span></a>
+        </div>
+      </article>
+    </section>
+
+    <section class="dashboard-grid">
+      <article class="card">
+        <div class="card-header">
+          <div><h2 class="card-title">Alertes de stock</h2><p class="subtitle">Références faibles ou épuisées.</p></div>
+          <a class="link" th:href="@{/articles}">Voir les articles →</a>
+        </div>
+        <div class="table-wrap" th:if="${!#lists.isEmpty(alertes)}">
+          <table>
+            <thead><tr><th>Référence</th><th>Article</th><th>Stock</th><th>Seuil</th><th>État</th></tr></thead>
+            <tbody>
+            <tr th:each="a : ${alertes}">
+              <td><a class="link" th:href="@{/stock/{id}(id=${a.id})}" th:text="${a.reference}">REF</a></td>
+              <td th:text="${a.designation}">Article</td>
+              <td><strong th:text="${stocks[a.id]}">0</strong></td>
+              <td th:text="${a.seuilAlerteValeur}">5</td>
+              <td><span class="badge" th:classappend="${etats[a.id].classeCss}" th:text="${etats[a.id].libelle}">État</span></td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="empty-state small-empty" th:if="${#lists.isEmpty(alertes)}">Aucune alerte de stock actuellement.</div>
+      </article>
+
+      <article class="card">
+        <div class="card-header">
+          <div><h2 class="card-title">Mouvements récents</h2><p class="subtitle">Dernières opérations enregistrées.</p></div>
+          <a class="link" th:href="@{/mouvements}">Tout voir →</a>
+        </div>
+        <div class="movement-list" th:if="${!#lists.isEmpty(mouvementsRecents)}">
+          <a class="movement-item" th:each="m : ${mouvementsRecents}" th:href="@{/stock/{id}(id=${m.articleId})}">
+            <span class="movement-sign" th:classappend="${m.type == 'ENTREE'} ? ' positive' : ' negative'" th:text="${m.type == 'ENTREE'} ? '+' : '−'">+</span>
+            <span class="movement-copy"><strong th:text="${m.reference}">REF</strong><small th:text="${m.designation}">Article</small></span>
+            <span class="movement-meta"><strong th:text="${m.quantite}">10</strong><small th:text="${#temporals.format(m.date, 'dd/MM/yyyy')}">24/10/2026</small></span>
+          </a>
+        </div>
+        <div class="empty-state small-empty" th:if="${#lists.isEmpty(mouvementsRecents)}">Aucun mouvement enregistré.</div>
+      </article>
+    </section>
+  </main>
+</div>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

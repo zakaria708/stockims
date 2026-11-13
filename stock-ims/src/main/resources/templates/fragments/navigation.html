@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<body>
+<aside class="sidebar" th:fragment="sidebar(active)">
+  <a class="brand" th:href="@{/}"><span class="brand-mark">SI</span><span>StockIMS</span></a>
+  <nav class="nav">
+    <a th:classappend="${active == 'dashboard'} ? 'active'" th:href="@{/}"><span class="nav-icon">⌂</span> Tableau de bord</a>
+    <a th:classappend="${active == 'articles'} ? 'active'" th:href="@{/articles}"><span class="nav-icon">▦</span> Articles</a>
+    <a th:classappend="${active == 'mouvements'} ? 'active'" th:href="@{/mouvements}"><span class="nav-icon">↕</span> Mouvements</a>
+  </nav>
+  <div class="sidebar-account">
+    <div class="account-line"><span class="account-dot"></span><span th:text="${currentUser}">admin</span></div>
+    <small th:text="${isAdmin} ? 'Administrateur' : 'Utilisateur'">Utilisateur</small>
+    <form th:action="@{/logout}" method="post">
+      <button class="logout-link" type="submit">Se déconnecter</button>
+    </form>
+  </div>
+  <div class="sidebar-footer">Gestion de stock · ESITH</div>
+</aside>
+</body>
+</html>

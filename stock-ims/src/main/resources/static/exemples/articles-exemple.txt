@@ -1,0 +1,3 @@
+reference;designation;categorie;seuilAlerte;stockInitial
+TIS-001;Rouleau de coton blanc;Textile;10;50
+TIS-002;Fil polyester noir;Fil;20;100

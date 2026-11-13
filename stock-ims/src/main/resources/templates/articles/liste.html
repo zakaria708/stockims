@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>StockIMS - Articles</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="app-shell">
+  <aside th:replace="~{fragments/navigation :: sidebar('articles')}"></aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="title-row">
+        <button class="btn btn-light mobile-menu" type="button" data-menu-toggle>☰</button>
+        <div><h1>Mes articles</h1><p class="subtitle">Recherchez, filtrez et gérez votre catalogue personnel.</p></div>
+      </div>
+      <a class="btn btn-primary" th:href="@{/articles/nouveau}">＋ Ajouter un article</a>
+    </header>
+
+    <div class="alert alert-success" th:if="${succes}" th:text="${succes}"></div>
+    <div class="alert alert-danger" th:if="${erreur}" th:text="${erreur}"></div>
+    <div class="alert alert-warning" th:if="${importErreurs}">
+      <strong>Détails de l’import :</strong>
+      <ul class="compact-list"><li th:each="e : ${importErreurs}" th:text="${e}"></li></ul>
+    </div>
+
+    <section class="card toolbar-card">
+      <form class="filters" th:action="@{/articles}" method="get">
+        <div class="field search-field">
+          <label for="q">Recherche</label>
+          <input id="q" name="q" th:value="${q}" placeholder="Référence ou désignation...">
+        </div>
+        <div class="field">
+          <label for="statut">État du stock</label>
+          <select id="statut" name="statut">
+            <option value="TOUS" th:selected="${statut == 'TOUS'}">Tous</option>
+            <option value="DISPONIBLE" th:selected="${statut == 'DISPONIBLE'}">Disponible</option>
+            <option value="FAIBLE" th:selected="${statut == 'FAIBLE'}">Stock faible</option>
+            <option value="EPUISE" th:selected="${statut == 'EPUISE'}">Épuisé</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="categorie">Catégorie</label>
+          <select id="categorie" name="categorie">
+            <option value="">Toutes</option>
+            <option th:each="c : ${categories}" th:value="${c}" th:text="${c}"
+                    th:selected="${categorieSelectionnee == c}"></option>
+          </select>
+        </div>
+        <div class="filter-actions">
+          <button class="btn btn-primary" type="submit">Rechercher</button>
+          <a class="btn btn-light" th:href="@{/articles}">Réinitialiser</a>
+        </div>
+      </form>
+    </section>
+
+    <section class="card">
+      <div class="card-header">
+        <div><h2 class="card-title">Import / export</h2><p class="subtitle">Importez plusieurs articles ou exportez l’inventaire actuel.</p></div>
+        <a class="btn btn-outline" th:href="@{/articles/export}">⇩ Exporter CSV</a>
+      </div>
+      <form class="import-form" th:action="@{/articles/import}" method="post" enctype="multipart/form-data" data-validate-import>
+        <div class="field file-field">
+          <label for="fichier">Fichier CSV, Excel ou TXT</label>
+          <input id="fichier" name="fichier" type="file" accept=".csv,.xlsx,.xls,.txt,text/csv,text/plain,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" required>
+          <span class="help">Formats : .csv, .xlsx, .xls et .txt — 5 Mo maximum. Colonnes obligatoires : reference, designation. Facultatives : categorie, seuilAlerte, stockInitial.</span>
+          <span class="help">CSV/TXT : colonnes séparées par <code>;</code>, <code>,</code> ou une tabulation. Excel : première feuille visible non vide. L’import remplit uniquement votre compte.</span>
+          <span class="help" data-file-message aria-live="polite"></span>
+        </div>
+        <button class="btn btn-success" type="submit">Importer le fichier</button>
+        <a class="link" th:href="@{/exemples/articles-exemple.csv}" download>Exemple CSV</a>
+        <a class="link" th:href="@{/exemples/articles-exemple.txt}" download>Exemple TXT</a>
+      </form>
+    </section>
+
+    <section class="card">
+      <div class="card-header">
+        <div><h2 class="card-title">Liste des articles</h2><p class="subtitle" th:text="${#lists.size(articles)} + ' résultat(s)'">0 résultat</p></div>
+        <a class="btn btn-outline" th:if="${!isAdmin}" th:href="@{/articles/export}">⇩ Exporter CSV</a>
+      </div>
+
+      <p class="help rule-note">Règle : Épuisé si stock = 0 ou stock = seuil ; Faible si 0 &lt; stock &lt; seuil ; Disponible si stock &gt; seuil.</p>
+      <div class="table-wrap" th:if="${!#lists.isEmpty(articles)}">
+        <table>
+          <thead><tr><th>Référence</th><th>Désignation</th><th>Catégorie</th><th>Stock</th><th>Seuil</th><th>État</th><th>Actions</th></tr></thead>
+          <tbody>
+          <tr th:each="a : ${articles}">
+            <td><strong th:text="${a.reference}">TIS-001</strong></td>
+            <td th:text="${a.designation}">Rouleau de coton</td>
+            <td><span class="category-chip" th:text="${a.categorieAffichee}">Textile</span></td>
+            <td><strong th:text="${stocks[a.id]}">0</strong></td>
+            <td th:text="${a.seuilAlerteValeur}">5</td>
+            <td>
+              <span class="badge" th:classappend="${etats[a.id].classeCss}" th:text="${etats[a.id].libelle}">État</span>
+            </td>
+            <td>
+              <div class="actions">
+                <a class="btn btn-outline btn-sm" th:href="@{/stock/{id}(id=${a.id})}">Stock</a>
+                <a class="btn btn-light btn-sm" th:href="@{/articles/{id}/modifier(id=${a.id})}">Modifier</a>
+                <form th:action="@{/articles/{id}/supprimer(id=${a.id})}" method="post"
+                      data-confirm="Supprimer cet article ? Son historique de mouvements sera également supprimé.">
+                  <button class="btn btn-danger btn-sm" type="submit">Supprimer</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="empty-state" th:if="${#lists.isEmpty(articles)}">
+        <strong>Aucun article trouvé</strong>
+        Modifiez vos critères de recherche ou ajoutez une nouvelle référence.<br><br>
+        <a class="btn btn-primary" th:href="@{/articles/nouveau}">Ajouter un article</a>
+      </div>
+    </section>
+  </main>
+</div>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

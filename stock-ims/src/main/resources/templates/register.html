@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>StockIMS - Créer un compte</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body class="login-body">
+<main class="login-shell">
+  <section class="login-card register-card">
+    <div class="login-brand">
+      <span class="brand-mark">SI</span>
+      <div><strong>StockIMS</strong><span>Gestion de stock</span></div>
+    </div>
+
+    <h1>Créer un compte</h1>
+    <p class="subtitle">Créez votre compte : votre inventaire personnel sera vide au départ.</p>
+
+    <div class="alert alert-danger" th:if="${erreurInscription}" th:text="${erreurInscription}"></div>
+
+    <form class="form-grid" th:action="@{/register}" th:object="${inscriptionForm}" method="post">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+      <div class="field">
+        <label for="username">Nom d’utilisateur</label>
+        <input id="username" th:field="*{username}" autocomplete="username" required autofocus placeholder="ex. zakaria">
+        <span class="error" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></span>
+      </div>
+
+      <div class="field">
+        <label for="email">Adresse e-mail</label>
+        <input id="email" th:field="*{email}" type="email" autocomplete="email" required placeholder="nom@exemple.com">
+        <span class="error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></span>
+      </div>
+
+      <div class="field">
+        <label for="password">Mot de passe</label>
+        <input id="password" th:field="*{password}" type="password" autocomplete="new-password" required placeholder="8 caractères minimum">
+        <span class="help">Entre 8 et 72 caractères.</span>
+        <span class="error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></span>
+      </div>
+
+      <div class="field">
+        <label for="confirmationPassword">Confirmer le mot de passe</label>
+        <input id="confirmationPassword" th:field="*{confirmationPassword}" type="password" autocomplete="new-password" required placeholder="Retapez le mot de passe">
+        <span class="error" th:if="${#fields.hasErrors('confirmationPassword')}" th:errors="*{confirmationPassword}"></span>
+      </div>
+
+      <button class="btn btn-primary btn-full" type="submit">Créer le compte</button>
+    </form>
+
+    <div class="auth-switch">
+      Vous avez déjà un compte ? <a th:href="@{/login}">Se connecter</a>
+    </div>
+  </section>
+</main>
+</body>
+</html>

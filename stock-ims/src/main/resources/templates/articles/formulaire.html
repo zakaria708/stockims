@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title th:text="${modeEdition} ? 'StockIMS - Modifier un article' : 'StockIMS - Nouvel article'">StockIMS - Article</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="app-shell">
+  <aside th:replace="~{fragments/navigation :: sidebar('articles')}"></aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="title-row">
+        <button class="btn btn-light mobile-menu" type="button" data-menu-toggle>☰</button>
+        <div>
+          <h1 th:text="${modeEdition} ? 'Modifier l’article' : 'Nouvel article'">Nouvel article</h1>
+          <p class="subtitle" th:text="${modeEdition} ? 'Mettez à jour les informations de la référence.' : 'Ajoutez une nouvelle référence au catalogue.'"></p>
+        </div>
+      </div>
+    </header>
+
+    <section class="card form-card">
+      <form class="form-grid"
+            th:action="${modeEdition} ? @{/articles/{id}(id=${articleId})} : @{/articles}"
+            th:object="${article}" method="post">
+        <div class="alert alert-danger" th:if="${#fields.hasGlobalErrors()}">
+          <div th:each="err : ${#fields.globalErrors()}" th:text="${err}"></div>
+        </div>
+
+        <div class="form-two-cols">
+          <div class="field">
+            <label for="reference">Référence *</label>
+            <input id="reference" th:field="*{reference}" maxlength="20" placeholder="Ex. TIS-001" autofocus>
+            <span class="help">Identifiant unique de l’article.</span>
+            <span class="error" th:if="${#fields.hasErrors('reference')}" th:errors="*{reference}"></span>
+          </div>
+          <div class="field">
+            <label for="categorie">Catégorie</label>
+            <input id="categorie" th:field="*{categorie}" maxlength="60" placeholder="Ex. Textile">
+            <span class="help">Ex. Textile, Fil, Maintenance...</span>
+            <span class="error" th:if="${#fields.hasErrors('categorie')}" th:errors="*{categorie}"></span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="designation">Désignation *</label>
+          <input id="designation" th:field="*{designation}" maxlength="80" placeholder="Ex. Rouleau de coton blanc">
+          <span class="help">Nom clair permettant d’identifier rapidement l’article.</span>
+          <span class="error" th:if="${#fields.hasErrors('designation')}" th:errors="*{designation}"></span>
+        </div>
+
+        <div class="form-two-cols">
+          <div class="field">
+            <label for="seuilAlerte">Seuil d’alerte</label>
+            <input id="seuilAlerte" type="number" min="0" max="1000000" th:field="*{seuilAlerte}" data-preview-seuil>
+            <span class="help">Stock égal au seuil = Épuisé ; stock positif inférieur au seuil = Faible.</span>
+            <span class="error" th:if="${#fields.hasErrors('seuilAlerte')}" th:errors="*{seuilAlerte}"></span>
+          </div>
+          <div class="field" th:if="${!modeEdition}">
+            <label for="stockInitial">Stock initial</label>
+            <input id="stockInitial" type="number" min="0" max="100000000" th:field="*{stockInitial}" data-preview-stock>
+            <span class="help">Optionnel : crée automatiquement une première entrée.</span>
+            <span class="error" th:if="${#fields.hasErrors('stockInitial')}" th:errors="*{stockInitial}"></span>
+          </div>
+        </div>
+
+        <div class="status-preview" data-status-preview-box th:if="${!modeEdition}" aria-live="polite">
+          <div><strong>Prévisualisation de l’état</strong><p class="help">Mise à jour automatiquement avec JavaScript, avant l’enregistrement.</p></div>
+          <span class="badge" data-status-preview>—</span>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" type="submit" th:text="${modeEdition} ? 'Enregistrer les modifications' : 'Enregistrer l’article'"></button>
+          <a class="btn btn-light" th:href="@{/articles}">Annuler</a>
+        </div>
+      </form>
+    </section>
+  </main>
+</div>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>
